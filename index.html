@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha384-Z2U+U6Z4kq3Djk81CXKiMEr7j5xcWp5DfoQa4FWEiBxjZh1BNT2h7FMNoyBFibb3" crossorigin="anonymous">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+        text-align: center;
+        color: #3498db;
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
+        background-color: #fff;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+    }
+
+        .month-year {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .weekday {
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 30px;
+            background-color: #3498db;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .day {
+            padding: 15px;
+            border: 1px solid #ddd;
+            background-color: #fff;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .day:hover {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .selected {
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .event-list {
+            margin-top: 20px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        button {
+            padding: 10px;
+            margin-right: 10px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        button:hover {
+            background-color: #2c3e50;
+        }
+    </style>
+    <title>일정 관리</title>
+</head>
+<body>
+    <div class="container">
+        <h1>일정 관리</h1>
+
+        <div class="month-year" id="monthYear">
+            <i class="fas fa-arrow-left prev-month" onclick="prevMonth()"></i>
+            <span class="prev-month" onclick="prevMonth()">&#9665;</span>
+            
+            <span class="next-month" onclick="nextMonth()">&#9655;</span>
+        </div>
+
+        <div class="weekdays">
+            <div class="weekday">일</div>
+            <div class="weekday">월</div>
+            <div class="weekday">화</div>
+            <div class="weekday">수</div>
+            <div class="weekday">목</div>
+            <div class="weekday">금</div>
+            <div class="weekday">토</div>
+        </div>
+
+        <div class="calendar" id="calendar">
+            <!-- 달력 부분 추가 -->
+        </div>
+
+        <div class="event-list">
+            <h2>일정 목록</h2>
+            <p id="selectedDate"></p>
+            <input type="text" id="eventInput" placeholder="일정을 입력하세요">
+            <button onclick="addEvent()">추가</button>
+            <ul id="eventList">
+                <!-- 일정 목록 아이템 추가 -->
+            </ul>
+        </div>
+    </div>
+
+  
+
+    <script>
+    let selectedDate = null;
+        let currentYear = 2024;
+        let currentMonth = 0; // 1월
+        let daysInMonth = 0; // 추가된 부분
+
+        function updateCalendar() {
+            const calendar = document.getElementById("calendar");
+            calendar.innerHTML = "";
+
+            daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate(); // 변경된 부분
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+
+            const monthYearDisplay = document.getElementById("monthYear");
+            monthYearDisplay.childNodes[2].textContent = `${currentYear}년 ${currentMonth + 1}월`;
+
+            const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+            const startDayIndex = firstDayOfMonth === 0 ? 7 : firstDayOfMonth; // 변경된 부분
+
+            for (let i = 1; i <= daysInMonth + startDayIndex; i++) {
+                const day = document.createElement("div");
+                day.className = "day";
+
+                if (i > startDayIndex) {
+                    const dayNumber = i - startDayIndex;
+                    day.textContent = dayNumber;
+
+                    day.addEventListener("click", function() {
+                        selectDate(dayNumber);
+                    });
+                }
+
+                calendar.appendChild(day);
+            }
+        }
+
+        function selectDate(date) {
+    const calendarDays = document.querySelectorAll(".day");
+    calendarDays.forEach(day => day.classList.remove("selected"));
+
+    selectedDate = date;
+
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    const startDayIndex = firstDayOfMonth === 0 ? 7 : firstDayOfMonth;
+
+    if (date <= daysInMonth) {
+        calendarDays[date + startDayIndex - 1].classList.add("selected");
+    }
+
+    const selectedDateDisplay = document.getElementById("selectedDate");
+    selectedDateDisplay.textContent = selectedDate !== null ?
+        `${currentYear}년 ${currentMonth + 1}월 ${selectedDate}일에 일정을 추가하세요.` : '';
+}
+
+
+        function addEvent() {
+    const eventInput = document.getElementById("eventInput");
+    const eventList = document.getElementById("eventList");
+    const eventText = eventInput.value.trim();
+
+    if (eventText && selectedDate !== null) {
+        const listItem = document.createElement("li");
+        const formattedDate = `${currentYear}-${currentMonth + 1}-${selectedDate}`;
+        listItem.textContent = `${formattedDate}: ${eventText}`;
+
+        // Add edit and delete buttons
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.addEventListener("click", function() {
+            editEvent(listItem);
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.addEventListener("click", function() {
+            deleteEvent(listItem);
+        });
+
+        listItem.appendChild(editButton);
+        listItem.appendChild(deleteButton);
+
+        // Insert new event in the correct order
+        const listItems = Array.from(eventList.getElementsByTagName("li"));
+        listItems.push(listItem);
+        listItems.sort((a, b) => {
+            const dateA = new Date(a.textContent.split(":")[0]);
+            const dateB = new Date(b.textContent.split(":")[0]);
+            return dateA - dateB;
+        });
+
+        // Clear the existing list and append the sorted items
+        eventList.innerHTML = "";
+        listItems.forEach(item => eventList.appendChild(item));
+
+        eventInput.value = "";
+        selectedDate = null;
+    }
+}
+
+function editEvent(listItem) {
+    const eventInput = document.getElementById("eventInput");
+    const dateAndText = listItem.textContent.split(":");
+    const formattedDate = dateAndText[0].trim();
+    const eventText = dateAndText.slice(1).join(":").trim(); // Fix here
+
+    // Pre-fill input with existing event text
+    eventInput.value = eventText;
+
+    // Remove the existing event from the list
+    listItem.remove();
+
+    // Update selected date based on the edited event
+    const dateParts = formattedDate.split("-");
+    currentYear = parseInt(dateParts[0]);
+    currentMonth = parseInt(dateParts[1]) - 1;
+    selectedDate = parseInt(dateParts[2]);
+
+    // Update the calendar and selected date display
+    updateCalendar();
+    selectDate(selectedDate);
+}
+
+
+function deleteEvent(listItem) {
+    // Remove the event from the list
+    listItem.remove();
+}
+
+
+
+
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateCalendar();
+        }
+
+        function prevMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateCalendar();
+        }
+
+        // 초기 달력 렌더링
+        updateCalendar();
+    </script>
+</body>
+</html>
